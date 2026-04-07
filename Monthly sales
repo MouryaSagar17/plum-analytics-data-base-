@@ -1,0 +1,9 @@
+- 3. MONTHLY SALES
+SELECT 
+    MONTHNAME(o.order_date) AS month_name,
+    SUM(p.price * oi.quantity) AS monthly_sales
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+GROUP BY MONTHNAME(o.order_date)
+ORDER BY MIN(o.order_date);

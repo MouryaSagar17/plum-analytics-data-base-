@@ -1,0 +1,147 @@
+CREATE DATABASE plum_analytics_db;
+USE plum_analytics_db;
+/* ================================
+   TABLES
+================================ */
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(50)
+);
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(255),
+    category_id INT,
+    product_type VARCHAR(50),
+    price DECIMAL(10,2),
+    is_vegan BOOLEAN,
+    is_cruelty_free BOOLEAN,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+);
+CREATE TABLE customers (
+    customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(100),
+    gender VARCHAR(10),
+    city VARCHAR(50)
+);
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+/* ================================
+   MASTER DATA
+================================ */
+INSERT INTO categories (category_name) VALUES
+('Skincare'),
+('Haircare'),
+('Bodycare');
+/* PRODUCTS*/
+INSERT INTO products VALUES
+(1,'Green Tea Face Wash',1,'Face Wash',345,TRUE,TRUE),
+(2,'Niacinamide Serum',1,'Serum',550,TRUE,TRUE),
+(3,'Green Tea Sunscreen SPF 50',1,'Sunscreen',499,TRUE,TRUE),
+(4,'Coconut Milk Shampoo',2,'Shampoo',399,TRUE,TRUE),
+(5,'Hibiscus Conditioner',2,'Conditioner',420,TRUE,TRUE),
+(6,'Rosemary Hair Serum',2,'Hair Serum',650,TRUE,TRUE),
+(7,'Vanilla Body Lotion',3,'Body Lotion',375,TRUE,TRUE),
+(8,'Hawaiian Rumba Perfume',3,'Perfume',699,TRUE,TRUE),
+(9,'Vanilla Body Wash',3,'Body Wash',299,TRUE,TRUE);
+
+/* CUSTOMERS (15) */
+INSERT INTO customers (customer_name, gender, city) VALUES
+('Ananya','Female','Bangalore'),
+('Rahul','Male','Hyderabad'),
+('Priya','Female','Chennai'),
+('Amit','Male','Pune'),
+('Sindu','Female','Chennai'),
+('Neha','Female','Delhi'),
+('Karthik','Male','Coimbatore'),
+('Pooja','Female','Mumbai'),
+('Arjun','Male','Bangalore'),
+('Meera','Female','Kochi'),
+('Ravi','Male','Vizag'),
+('Sneha','Female','Trichy'),
+('Vikram','Male','Chennai'),
+('Divya','Female','Mysore'),
+('Nikhil','Male','Noida');
+/* ORDERS */
+INSERT INTO orders VALUES
+(1,1,'2025-01-05'),
+(2,2,'2025-01-10'),
+(3,3,'2025-01-15'),
+(4,4,'2025-02-02'),
+(5,5,'2025-02-05'),
+(6,5,'2025-02-15'),
+(7,6,'2025-02-20'),
+(8,7,'2025-03-01'),
+(9,8,'2025-03-05'),
+(10,9,'2025-03-10'),
+(11,10,'2025-03-15'),
+(12,11,'2025-03-20'),
+(13,12,'2025-04-02'),
+(14,13,'2025-04-05'),
+(15,14,'2025-04-10'),
+(16,15,'2025-04-15');
+/* ORDER ITEMS */
+INSERT INTO order_items VALUES
+(1,1,1,2),
+(2,1,3,1),
+(3,2,4,2),
+(4,2,6,1),
+(5,3,2,2),
+(6,3,9,1),
+(7,4,3,3),
+(8,5,7,4),
+(9,6,2,5),
+(10,6,6,3),
+(11,7,1,2),
+(12,8,8,1),
+(13,9,9,3),
+(14,10,4,2),
+(15,11,5,2),
+(16,12,3,1),
+(17,13,6,4),
+(18,14,2,3),
+(19,15,7,2),
+(20,16,8,2);
+/* ANALYTICS QUERIES */
+-- 1. TOTAL SALES
+SELECT SUM(p.price * oi.quantity) AS total_sales
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id;
+-- 2. MOST SOLD PRODUCT
+SELECT p.product_name,
+       SUM(oi.quantity) AS total_units_sold
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id
+GROUP BY p.product_name
+ORDER BY total_units_sold DESC
+LIMIT 1;
+-- 3. MONTHLY SALES
+SELECT 
+    MONTHNAME(o.order_date) AS month_name,
+    SUM(p.price * oi.quantity) AS monthly_sales
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+GROUP BY MONTHNAME(o.order_date)
+ORDER BY MIN(o.order_date);
+
+-- 4. CUSTOMER WISE SPENDING
+SELECT c.customer_name,
+       SUM(p.price * oi.quantity) AS total_spent
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+GROUP BY c.customer_name
+ORDER BY total_spent DESC;

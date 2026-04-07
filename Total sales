@@ -1,0 +1,4 @@
+-- 1. TOTAL SALES
+SELECT SUM(p.price * oi.quantity) AS total_sales
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id;
