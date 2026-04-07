@@ -32,10 +32,10 @@ USE plum_analytics_db;
 
 ```mermaid
 erDiagram
-    categories ||--o{ products : \"has\"
-    customers ||--o{ orders : \"places\"
-    orders ||--o{ order_items : \"contains\"
-    products ||--o{ order_items : \"ordered\"
+    categories ||--o{ products : has
+    customers ||--o{ orders : places
+    orders ||--o{ order_items : contains
+    products ||--o{ order_items : ordered
     
     categories {
         int category_id PK
